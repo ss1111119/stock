@@ -9,4 +9,6 @@
 
 5.利用google apps script來執行。
 
+6.可以配合使用google apps script定時觸發裝置，來每日執行。
+
 
