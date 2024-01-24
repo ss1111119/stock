@@ -7,4 +7,6 @@
 
 4.目前為當日抓取。
 
+5.利用google apps script來執行。
+
 
