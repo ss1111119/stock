@@ -1,43 +1,43 @@
-function fetchDataAndWriteToSheet() {
+function fetchDataAndWriteToSheet(testDate) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("三大法人統計");
-
   if (!sheet) {
-    console.error("找不到名稱為 '三大法人統計' 的工作表");
+    Logger.log("找不到名稱為 '三大法人統計' 的工作表");
     return;
   }
 
-  var existingDates = []; // 定义 existingDates 变量
-
-  var currentDate = new Date();
+  var currentDate = testDate ? new Date(testDate) : new Date();
   var formattedStartDate = Utilities.formatDate(currentDate, "GMT+8", "yyyyMMdd");
-  Logger.log("正在取得日期 " + formattedStartDate + " 的數據");
+  Logger.log("正在取得日期 " + formattedStartDate + " 的資料");
 
-  // 清空 existingDates 数组
-  existingDates.length = 0;
+  var existingDates = sheet.getRange(1, 1, sheet.getLastRow(), 1).getValues().flat();
+  Logger.log("existingDates (before check): " + existingDates.join(", "));
 
-  // 重新获取 existingDates 数据
-  existingDates = sheet.getRange(1, 1, sheet.getLastRow(), 1).getValues().flat();
-
-  Logger.log("existingDates: " + existingDates);
-  Logger.log("formattedStartDate: " + formattedStartDate);
-
-  if (existingDates.indexOf(formattedStartDate) !== -1) {
-    Logger.log("日期 " + formattedStartDate + " 的數據已存在，不再寫入。");
-    return; // 立即停止执行
+  var dateExists = false;
+  for (var i = 0; i < existingDates.length; i++) {
+    Logger.log("比對 " + existingDates[i] + " 與 " + formattedStartDate);
+    if (existingDates[i].toString() === formattedStartDate) {
+      dateExists = true;
+      break;
+    }
   }
 
+  if (dateExists) {
+    Logger.log("日期 " + formattedStartDate + " 的資料已存在，不再寫入。");
+    return;
+  }
 
-  Logger.log("继续执行其他操作，因为日期 " + formattedStartDate + " 的數據不存在。");
-
-
+  Logger.log("繼續執行其他操作，因為日期 " + formattedStartDate + " 的資料不存在。");
+  // 準備請求並獲取資料
   var url = 'https://www.twse.com.tw/rwd/zh/fund/BFI82U';
   var payload = {
     'response': 'json',
     'dayDate': formattedStartDate
   };
+  Logger.log("請求URL: " + url + "，參數: " + JSON.stringify(payload));
 
   var response = UrlFetchApp.fetch(url, { 'method': 'get', 'muteHttpExceptions': true, 'payload': payload });
   var content = response.getContentText();
+  Logger.log("響應內容: " + content);
 
   var jsonData = JSON.parse(content);
 
@@ -52,12 +52,14 @@ function fetchDataAndWriteToSheet() {
     ];
 
     sheet.appendRow(data);
-    Logger.log("日期 " + formattedStartDate + " 的數據已成功寫入。");
+    Logger.log("日期 " + formattedStartDate + " 的資料已成功寫入。");
   } else {
-    Logger.log("無法取得日期 " + formattedStartDate + " 的數據。");
+    Logger.log("無法獲取日期 " + formattedStartDate + " 的資料。");
   }
 }
 
-function runDataFetchLoop() {
-  fetchDataAndWriteToSheet();
+
+function testFetchDataForSpecificDate() {
+  Logger.log("開始測試特定日期20240124的資料抓取");
+  fetchDataAndWriteToSheet('2024-01-24');
 }
