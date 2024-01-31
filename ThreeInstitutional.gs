@@ -5,7 +5,19 @@ function fetchDataAndWriteToSheet(testDate) {
     return;
   }
 
-  var currentDate = testDate ? new Date(testDate) : new Date();
+  // 检查提供的 testDate 是否是一个有效的日期字符串
+  Logger.log("提供的 testDate: " + testDate);
+  var currentDate;
+  if (typeof testDate === "string" && !isNaN(Date.parse(testDate))) {
+    currentDate = new Date(testDate);
+  } else {
+    Logger.log("提供的 testDate 无效或不是字符串，使用当前日期");
+    currentDate = new Date();
+  }
+  
+  // 打印解析后的 currentDate
+  Logger.log("解析后的 currentDate: " + currentDate.toString());
+  
   var formattedStartDate = Utilities.formatDate(currentDate, "GMT+8", "yyyyMMdd");
   Logger.log("正在取得日期 " + formattedStartDate + " 的資料");
 
@@ -27,7 +39,6 @@ function fetchDataAndWriteToSheet(testDate) {
   }
 
   Logger.log("繼續執行其他操作，因為日期 " + formattedStartDate + " 的資料不存在。");
-  // 準備請求並獲取資料
   var url = 'https://www.twse.com.tw/rwd/zh/fund/BFI82U';
   var payload = {
     'response': 'json',
@@ -53,13 +64,12 @@ function fetchDataAndWriteToSheet(testDate) {
 
     sheet.appendRow(data);
     Logger.log("日期 " + formattedStartDate + " 的資料已成功寫入。");
+
+    // 在调用calculateDifferencesAndNotifyWithTokens之前暂停10秒
+    Utilities.sleep(10000); // 暂停10秒
+
+    calculateDifferencesAndNotifyWithTokens();
   } else {
     Logger.log("無法獲取日期 " + formattedStartDate + " 的資料。");
   }
-}
-
-
-function testFetchDataForSpecificDate() {
-  Logger.log("開始測試特定日期20240124的資料抓取");
-  fetchDataAndWriteToSheet('2024-01-24');
 }
