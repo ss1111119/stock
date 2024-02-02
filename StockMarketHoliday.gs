@@ -128,7 +128,7 @@ function myFunction() {
     fetchDataAndWriteToSheet(testDate);  // 傳遞有效的日期字符串
     console.log('執行了任務，因為今天不是假日。');
   } else {
-    console.log('今天是假日，跳過任務。');
+    console.log('今天是休市日，跳過任務。');
   }
 }
 
